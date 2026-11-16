@@ -2,155 +2,214 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Skip Player</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;600;700&display=swap">
 <style>
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f6f5f1;--card:#fff;--tx:#1d1d1b;--mut:#6b6a64;--bd:#dcdad2;--ac:#0f6e56;--act:#fff;--warn:#a32d2d}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1a1a18;--card:#262624;--tx:#eeede8;--mut:#a09f98;--bd:#3d3d3a;--ac:#5dcaa5;--act:#04342c;--warn:#f09595;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#1a1a18;--card:#262624;--tx:#eeede8;--mut:#a09f98;--bd:#3d3d3a;--ac:#5dcaa5;--act:#04342c;--warn:#f09595;color-scheme:dark}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
+:root{--bg:#f4f5fb;--pn:#fff;--tx:#1b1f3b;--mu:#5d6285;--ln:#dfe2f2;--ac:#3b47c4;--on:#fff;--rs:#d6456b;--rt:#fbe3ea}
+@media (prefers-color-scheme:dark){:root{--bg:#12142a;--pn:#1c1f3d;--tx:#eceefb;--mu:#a3a8d0;--ln:#2e3263;--ac:#8f99ff;--on:#12142a;--rs:#ff7f9f;--rt:#3a2038;color-scheme:dark}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif}
-main{max-width:760px;margin:0 auto;padding:16px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-h1{font-size:20px;margin:0}
-.lang button{background:none;border:1px solid var(--bd);color:var(--tx);padding:4px 10px;border-radius:8px;cursor:pointer}
-.lang button.on{background:var(--ac);color:var(--act);border-color:var(--ac)}
-.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-top:14px}
-label{display:block;font-size:14px;color:var(--mut);margin-bottom:4px}
-input{width:100%;padding:9px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit}
+body{margin:0;background:var(--bg);color:var(--tx);font:400 16px/1.6 "Readex Pro",system-ui,Tahoma,sans-serif}
+main{max-width:900px;margin:0 auto;padding:20px 16px 56px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700}
+.logo svg{width:34px;height:34px}
+.pills,.seg{display:inline-flex;gap:4px;border-radius:99px;padding:3px}
+.pills{background:var(--pn);border:1px solid var(--ln)}
+.seg{background:var(--bg);margin-bottom:12px}
+.pills button,.seg button{border:0;background:none;color:var(--mu);padding:5px 14px;border-radius:99px;cursor:pointer;font:inherit;font-size:14px}
+.pills button.on,.seg button.on{background:var(--ac);color:var(--on)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+h1{font-size:clamp(30px,6vw,52px);line-height:1.2;letter-spacing:-.02em;font-weight:700;margin:40px 0 12px;max-width:15em}
+.sub{color:var(--mu);max-width:36em;margin:0 0 28px}
+.panel{background:var(--pn);border:1px solid var(--ln);border-radius:20px;padding:16px;margin-top:16px}
+.in{display:flex;gap:8px;flex-wrap:wrap}
+input[type=text]{flex:1;min-width:0;padding:12px 14px;border:1px solid var(--ln);border-radius:14px;background:var(--bg);color:var(--tx);font:inherit}
+.btn{padding:12px 22px;border-radius:99px;border:0;background:var(--ac);color:var(--on);font:inherit;font-weight:600;cursor:pointer}
+.btn.alt{background:none;color:var(--tx);border:1px solid var(--ln);font-weight:400}
+.btn.on{background:var(--rs);color:#fff}
+#fname{color:var(--mu);align-self:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr}
+.err{color:var(--rs);margin:8px 0 0;min-height:1.4em;font-size:14px}
+.tl{position:relative;height:26px;border-radius:13px;background:var(--ac);overflow:hidden;cursor:pointer;direction:ltr}
+.tl.demo{height:34px;cursor:default;margin:8px 0 28px}
+.cut{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(45deg,var(--rs) 0 3px,var(--rt) 3px 7px)}
+.pend{position:absolute;top:0;bottom:0;width:3px;background:var(--rs)}
+#ph{position:absolute;top:0;bottom:0;width:3px;background:#fff;box-shadow:0 0 0 1px var(--tx);left:0}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.steps li{display:flex;gap:12px;align-items:center}
+.steps b{flex:none;width:30px;height:30px;border-radius:50%;background:var(--pn);border:1px solid var(--ln);display:grid;place-items:center}
+#pl,#lv{width:100%;aspect-ratio:16/9;border:0;border-radius:20px;background:#000;display:block}
+.meta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin-top:10px;color:var(--mu);font-size:14px}
+.lg i{display:inline-block;width:14px;height:14px;border-radius:4px;vertical-align:-2px;margin-inline:10px 4px}
+.lg i:first-child{margin-inline-start:0}
+.k{background:var(--ac)}.s{background:repeating-linear-gradient(45deg,var(--rs) 0 3px,var(--rt) 3px 7px)}
+h2{font-size:18px;margin:0 0 10px}
 .row{display:flex;gap:8px;align-items:center;margin-top:8px}
-.row input{flex:1;min-width:0;direction:ltr;text-align:center}
-.row span{color:var(--mut)}
-button.b{padding:9px 14px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--tx);cursor:pointer;font:inherit}
-button.p{background:var(--ac);color:var(--act);border-color:var(--ac);font-weight:600}
-.x{padding:6px 10px}
-.hint{font-size:13px;color:var(--mut);margin:6px 0 0}
-.err{color:var(--warn);font-size:14px;margin-top:8px;min-height:1em}
-.player,#pl{aspect-ratio:16/9;width:100%;border:0;border-radius:12px;background:#000;display:block}
-.parts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.parts button{direction:ltr}
-.parts button.on{background:var(--ac);color:var(--act);border-color:var(--ac)}
-.acts{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.row input{text-align:center}
+.row.bad input{border-color:var(--rs)}
+.x{border:0;background:none;color:var(--mu);font-size:22px;cursor:pointer;padding:0 8px}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.muted{color:var(--mu);font-size:14px}
+textarea{width:100%;padding:10px;border:1px solid var(--ln);border-radius:14px;background:var(--bg);color:var(--tx);font:13px/1.5 ui-monospace,Consolas,monospace;direction:ltr}
 [hidden]{display:none!important}
 </style>
 </head>
 <body>
 <main>
- <div class="top"><h1 id="t"></h1>
-  <div class="lang"><button data-l="ar">العربية</button> <button data-l="fr">Français</button> <button data-l="en">English</button></div></div>
+<header>
+ <div class="logo"><svg viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="10" fill="var(--ac)"/><rect x="5" y="15" width="10" height="4" rx="2" fill="var(--on)"/><rect x="19" y="15" width="10" height="4" rx="2" fill="var(--on)"/></svg><span>Skip Player</span></div>
+ <div class="pills"><button data-l="ar">العربية</button><button data-l="fr">Français</button><button data-l="en">English</button></div>
+</header>
 
- <div class="card">
-  <label id="lUrl"></label>
-  <input id="url" dir="ltr" placeholder="https://www.youtube.com/watch?v=...">
-  <label id="lSkip" style="margin-top:14px"></label>
+<h1 data-t="h1"></h1>
+<p class="sub" data-t="sub"></p>
+
+<section class="panel">
+ <div class="seg"><button id="mYt" data-t="tYt"></button><button id="mLoc" data-t="tLoc"></button></div>
+ <div class="in" id="ytIn"><input type="text" id="url" dir="ltr" data-p="ph" autocomplete="off"><button class="btn" id="go" data-t="play"></button></div>
+ <div class="in" id="locIn" hidden><label class="btn alt" for="file" data-t="pick"></label><input type="file" id="file" accept="video/*" hidden><span id="fname"></span></div>
+ <div class="err" id="err" role="alert"></div>
+</section>
+
+<section id="hero">
+ <div class="tl demo" aria-hidden="true"><i class="cut" style="left:20%;width:11%"></i><i class="cut" style="left:58%;width:7%"></i></div>
+ <ol class="steps"><li><b>1</b><span data-t="s1"></span></li><li><b>2</b><span data-t="s2"></span></li><li><b>3</b><span data-t="s3"></span></li></ol>
+</section>
+
+<section id="stage" hidden>
+ <div class="panel" style="padding:0;border:0;background:none;margin-top:20px">
+  <div id="pl"></div><video id="lv" controls playsinline hidden></video>
+  <div class="tl" id="tl" style="margin-top:14px"><span id="cuts"></span><i id="ph"></i></div>
+  <div class="meta"><span class="lg"><i class="k"></i><span data-t="lk"></span><i class="s"></i><span data-t="ls"></span></span><span id="tt" dir="ltr"></span></div>
+ </div>
+ <div class="panel">
+  <h2 data-t="rT"></h2>
+  <p class="muted" id="rEmpty" data-t="rE"></p>
   <div id="rows"></div>
-  <div class="acts"><button class="b" id="add"></button></div>
-  <p class="hint" id="hint"></p>
-  <div class="err" id="err"></div>
-  <div class="acts"><button class="b p" id="go"></button></div>
+  <p class="err" id="rerr" hidden data-t="badT"></p>
+  <div class="acts"><button class="btn" id="mark"></button><button class="btn alt" id="add" data-t="add"></button></div>
  </div>
-
- <div class="card" id="pc" hidden>
-  <div id="pl"></div>
-  <div class="parts" id="parts"></div>
-  <p class="hint" id="note"></p>
+ <div class="panel" id="ffbox" hidden>
+  <h2 data-t="ffT"></h2>
+  <p class="muted" data-t="ffN"></p>
+  <textarea id="cmd" readonly rows="5"></textarea>
+  <div class="acts"><button class="btn alt" id="cp"></button></div>
  </div>
+</section>
 </main>
 
 <script src="https://www.youtube.com/iframe_api"></script>
 <script>
 var TX={
-ar:{t:"مشغّل تخطّي المقاطع",url:"رابط فيديو يوتيوب",skip:"المقاطع التي سيتم تخطّيها (من – إلى)",add:"+ إضافة مقطع للتخطّي",hint:"اكتب الوقت بصيغة 2:30 أو 1:02:30 أو بالثواني. الفيديو لا يُحمَّل ولا يُعدَّل.",go:"▶ تشغيل",bad:"رابط يوتيوب غير صالح.",badT:"وقت غير صالح، تأكد من أن «من» أقل من «إلى».",none:"أضف مقطعًا واحدًا على الأقل للتخطّي.",part:"الجزء",note:"ينتقل المشغّل تلقائيًا إلى الجزء التالي. إذا أوقفت الفيديو مؤقتًا فاستعمل أزرار الأجزاء للانتقال يدويًا.",from:"من",to:"إلى"},
-fr:{t:"Lecteur avec passages ignorés",url:"Lien de la vidéo YouTube",skip:"Passages à ignorer (de – à)",add:"+ Ajouter un passage à ignorer",hint:"Écrivez le temps sous la forme 2:30, 1:02:30 ou en secondes. La vidéo n’est ni téléchargée ni modifiée.",go:"▶ Lire",bad:"Lien YouTube invalide.",badT:"Temps invalide : « de » doit être inférieur à « à ».",none:"Ajoutez au moins un passage à ignorer.",part:"Partie",note:"Le lecteur passe automatiquement à la partie suivante. Si vous mettez en pause, utilisez les boutons de parties pour avancer manuellement.",from:"de",to:"à"},
-en:{t:"Skip Player",url:"YouTube video link",skip:"Parts to skip (from – to)",add:"+ Add a part to skip",hint:"Type time as 2:30, 1:02:30 or in seconds. The video is not downloaded or changed.",go:"▶ Play",bad:"Invalid YouTube link.",badT:"Invalid time: “from” must be less than “to”.",none:"Add at least one part to skip.",part:"Part",note:"The player moves to the next part automatically. If you pause the video, use the part buttons to move on manually.",from:"from",to:"to"}
+en:{h1:"Watch it without the parts you don’t want",sub:"Paste a YouTube link or pick a video from your device, mark what to skip, and press play. Nothing is downloaded or changed.",tYt:"YouTube",tLoc:"My device",ph:"Paste a YouTube link",play:"Play",pick:"Choose a video",s1:"Add a video",s2:"Mark the parts to skip",s3:"Watch without them",lk:"Plays",ls:"Skipped",rT:"Parts that will be skipped",rE:"Nothing skipped yet. Press “Skip from now” while the video plays, or type the times yourself.",from:"From",to:"To",add:"Add by hand",skip:"Skip from now",end:"End skip here",ffT:"Save a cut copy",ffN:"For your own files only. Install ffmpeg, then paste this command in a terminal opened in the video’s folder.",copy:"Copy",copied:"Copied",bad:"That doesn’t look like a YouTube link.",api:"YouTube couldn’t load. Check your connection and reload.",badT:"Use times like 2:30, with “from” before “to”."},
+fr:{h1:"Regardez sans les passages que vous ne voulez pas",sub:"Collez un lien YouTube ou choisissez une vidéo sur votre appareil, marquez ce qu’il faut ignorer, puis lancez la lecture. Rien n’est téléchargé ni modifié.",tYt:"YouTube",tLoc:"Mon appareil",ph:"Collez un lien YouTube",play:"Lire",pick:"Choisir une vidéo",s1:"Ajoutez une vidéo",s2:"Marquez les passages à ignorer",s3:"Regardez sans eux",lk:"Lu",ls:"Ignoré",rT:"Passages ignorés",rE:"Rien d’ignoré pour l’instant. Appuyez sur « Ignorer à partir de maintenant » pendant la lecture, ou saisissez les temps.",from:"De",to:"À",add:"Ajouter à la main",skip:"Ignorer à partir de maintenant",end:"Fin du passage ici",ffT:"Enregistrer une copie coupée",ffN:"Pour vos propres fichiers uniquement. Installez ffmpeg, puis collez cette commande dans un terminal ouvert dans le dossier de la vidéo.",copy:"Copier",copied:"Copié",bad:"Ce n’est pas un lien YouTube.",api:"YouTube n’a pas pu se charger. Vérifiez la connexion et rechargez.",badT:"Utilisez des temps comme 2:30, avec « de » avant « à »."},
+ar:{h1:"شاهد بدون المقاطع التي لا تريدها",sub:"الصق رابط يوتيوب أو اختر فيديو من جهازك، حدّد ما تريد تخطّيه ثم اضغط تشغيل. لا يتم تحميل شيء ولا تعديل الفيديو.",tYt:"يوتيوب",tLoc:"جهازي",ph:"الصق رابط يوتيوب",play:"تشغيل",pick:"اختر فيديو",s1:"أضف فيديو",s2:"حدّد المقاطع المراد تخطّيها",s3:"شاهد بدونها",lk:"يُعرض",ls:"يُتخطّى",rT:"المقاطع التي سيتم تخطّيها",rE:"لا يوجد شيء بعد. اضغط «تخطَّ من الآن» أثناء التشغيل، أو اكتب الأوقات بنفسك.",from:"من",to:"إلى",add:"إضافة يدويًا",skip:"تخطَّ من الآن",end:"انتهى التخطّي هنا",ffT:"احفظ نسخة مقطوعة",ffN:"لملفاتك الخاصة فقط. ثبّت ffmpeg ثم الصق هذا الأمر في الطرفية داخل مجلد الفيديو.",copy:"نسخ",copied:"تم النسخ",bad:"هذا لا يبدو رابط يوتيوب.",api:"تعذّر تحميل يوتيوب. تحقق من الاتصال وأعد التحميل.",badT:"استعمل أوقاتًا مثل 2:30 على أن تكون «من» قبل «إلى»."}
 };
 var lang="en";try{var nl=(navigator.language||"en").slice(0,2);if(TX[nl])lang=nl}catch(e){}
-var $=function(i){return document.getElementById(i)},timer=null,segs=[],cur=-1;
+var $=function(i){return document.getElementById(i)};
+var mode="yt",player=null,ready=false,lf=null,curId=null,lv=$("lv"),skips=[],pend=null,lastSeek=0,lastDur=0,active=false;
+window.onYouTubeIframeAPIReady=function(){ready=true};
+
+function parseT(v){v=(v||"").trim();var p=v.split(":");if(!v||p.length>3)return NaN;var t=0;for(var i=0;i<p.length;i++){if(!/^\d+$/.test(p[i]))return NaN;t=t*60+parseInt(p[i],10)}return t}
+function fmt(s){s=Math.floor(s);var h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return(h?h+":"+(m<10?"0":""):"")+m+":"+(x<10?"0":"")+x}
+function vid(u){var m=(u||"").match(/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([A-Za-z0-9_-]{11})/);return m?m[1]:(/^[A-Za-z0-9_-]{11}$/.test((u||"").trim())?u.trim():null)}
+function say(k){$("err").textContent=k?TX[lang][k]:""}
 
 function setLang(l){
- lang=l;var s=TX[l];
- document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr";
- $("t").textContent=s.t;$("lUrl").textContent=s.url;$("lSkip").textContent=s.skip;
- $("add").textContent=s.add;$("hint").textContent=s.hint;$("go").textContent=s.go;$("note").textContent=s.note;
- document.title=s.t;
- document.querySelectorAll(".lang button").forEach(function(b){b.classList.toggle("on",b.dataset.l===l)});
- document.querySelectorAll(".row input").forEach(function(inp,i){inp.placeholder=(i%2===0?s.from:s.to)});
- if(segs.length)renderParts();
+ lang=l;var s=TX[l];document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr";
+ document.querySelectorAll("[data-t]").forEach(function(e){e.textContent=s[e.dataset.t]});
+ document.querySelectorAll("[data-p]").forEach(function(e){e.placeholder=s[e.dataset.p]});
+ document.querySelectorAll(".pills button").forEach(function(b){b.classList.toggle("on",b.dataset.l===l)});
+ document.querySelectorAll(".row").forEach(function(r){var i=r.querySelectorAll("input");i[0].placeholder=s.from;i[1].placeholder=s.to});
+ $("cp").textContent=s.copy;document.title="Skip Player";updMark();say("");
 }
+function updMark(){$("mark").textContent=pend===null?TX[lang].skip:TX[lang].end;$("mark").classList.toggle("on",pend!==null)}
+function setMode(m){mode=m;$("mYt").classList.toggle("on",m==="yt");$("mLoc").classList.toggle("on",m==="loc");$("ytIn").hidden=m!=="yt";$("locIn").hidden=m!=="loc";say("")}
+
 function addRow(a,b){
  var r=document.createElement("div");r.className="row";
- r.innerHTML='<input inputmode="text"><span>–</span><input inputmode="text"><button class="b x" aria-label="x">✕</button>';
- var i=r.querySelectorAll("input");i[0].value=a||"";i[1].value=b||"";
- i[0].placeholder=TX[lang].from;i[1].placeholder=TX[lang].to;
- r.querySelector("button").onclick=function(){r.remove()};
+ r.innerHTML='<input type="text" dir="ltr"><span>–</span><input type="text" dir="ltr"><button type="button" class="x" aria-label="×">×</button>';
+ var i=r.querySelectorAll("input");i[0].value=a||"";i[1].value=b||"";i[0].placeholder=TX[lang].from;i[1].placeholder=TX[lang].to;
+ i[0].onchange=i[1].onchange=function(){onRanges()};
+ r.querySelector("button").onclick=function(){r.remove();onRanges()};
  $("rows").appendChild(r);
 }
-function parseT(v){
- v=(v||"").trim();if(!v)return NaN;
- var p=v.split(":");if(p.length>3)return NaN;
- var t=0;for(var i=0;i<p.length;i++){if(!/^\d+$/.test(p[i]))return NaN;t=t*60+parseInt(p[i],10)}
- return t;
-}
-function fmt(s){var h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return(h?h+":"+(m<10?"0":""):"")+m+":"+(x<10?"0":"")+x}
-function vid(u){
- var m=(u||"").match(/(?:v=|youtu\.be\/|embed\/|shorts\/|live\/)([A-Za-z0-9_-]{11})/);
- return m?m[1]:(/^[A-Za-z0-9_-]{11}$/.test((u||"").trim())?u.trim():null);
-}
-function go(){
- var s=TX[lang],err=$("err");err.textContent="";
- var id=vid($("url").value);if(!id){err.textContent=s.bad;return}
- var rs=[],rows=document.querySelectorAll("#rows .row");
- for(var i=0;i<rows.length;i++){
-  var ins=rows[i].querySelectorAll("input");
-  if(!ins[0].value.trim()&&!ins[1].value.trim())continue;
-  var a=parseT(ins[0].value),b=parseT(ins[1].value);
-  if(isNaN(a)||isNaN(b)||a>=b){err.textContent=s.badT;return}
-  rs.push([a,b]);
- }
- if(!rs.length){err.textContent=s.none;return}
- rs.sort(function(x,y){return x[0]-y[0]});
- segs=[];var pos=0;
- rs.forEach(function(r){if(r[0]>pos)segs.push({id:id,start:pos,end:r[0]});pos=Math.max(pos,r[1])});
- segs.push({id:id,start:pos,end:null});
- skips=rs;$("pc").hidden=false;start(id);
- $("pc").scrollIntoView({behavior:"smooth"});
-}
-function renderParts(){
- var s=TX[lang],c=$("parts");c.innerHTML="";
- segs.forEach(function(g,i){
-  var b=document.createElement("button");b.className="b"+(i===cur?" on":"");
-  b.textContent=s.part+" "+(i+1)+" · "+fmt(g.start)+(g.end!==null?"–"+fmt(g.end):"→");
-  b.onclick=function(){playSeg(i)};c.appendChild(b);
+function readRanges(){
+ var out=[],bad=false,rows=document.querySelectorAll("#rows .row");
+ rows.forEach(function(r){
+  var i=r.querySelectorAll("input");if(!i[0].value.trim()&&!i[1].value.trim()){r.classList.remove("bad");return}
+  var a=parseT(i[0].value),b=parseT(i[1].value);
+  if(isNaN(a)||isNaN(b)||a>=b){bad=true;r.classList.add("bad");return}
+  r.classList.remove("bad");out.push([a,b]);
  });
+ out.sort(function(x,y){return x[0]-y[0]});skips=out;
+ $("rerr").hidden=!bad;$("rEmpty").hidden=rows.length>0;
 }
-var player=null,skips=[],ready=false,lastSeek=0;
-TX.ar.api="تعذّر تحميل واجهة يوتيوب. تحقق من الاتصال وأعد تحميل الصفحة.";
-TX.fr.api="Impossible de charger l’API YouTube. Vérifiez la connexion et rechargez la page.";
-TX.en.api="Could not load the YouTube API. Check your connection and reload the page.";
-window.onYouTubeIframeAPIReady=function(){ready=true};
-function start(id){
- if(!ready&&!(window.YT&&YT.Player)){$("err").textContent=TX[lang].api;return}
- cur=0;renderParts();
- if(player&&player.loadVideoById){player.loadVideoById({videoId:id,startSeconds:segs[0].start});return}
- player=new YT.Player("pl",{videoId:id,playerVars:{autoplay:1,rel:0,playsinline:1,start:segs[0].start},events:{onReady:function(e){e.target.playVideo()}}});
+function getT(){try{return mode==="yt"?player.getCurrentTime():lv.currentTime}catch(e){return NaN}}
+function getDur(){try{return mode==="yt"?player.getDuration():lv.duration}catch(e){return 0}}
+function seek(t){lastSeek=Date.now();try{if(mode==="yt")player.seekTo(t,true);else lv.currentTime=t}catch(e){}}
+function drawTl(){
+ var d=getDur(),h="";
+ if(d>0){skips.forEach(function(r){h+='<i class="cut" style="left:'+r[0]/d*100+'%;width:'+(Math.min(r[1],d)-r[0])/d*100+'%"></i>'});if(pend!==null)h+='<i class="pend" style="left:'+pend/d*100+'%"></i>'}
+ $("cuts").innerHTML=h;
 }
-function playSeg(i){
- if(!player||!player.seekTo)return;
- cur=i;lastSeek=Date.now();player.seekTo(segs[i].start,true);player.playVideo();renderParts();
+function key(){return"skip_"+curId}
+function save(){
+ if(!curId)return;
+ try{var a=[];document.querySelectorAll("#rows .row").forEach(function(r){var i=r.querySelectorAll("input");if(i[0].value.trim()||i[1].value.trim())a.push([i[0].value,i[1].value])});localStorage.setItem(key(),JSON.stringify(a))}catch(e){}
 }
+function cmd(){
+ if(mode!=="loc"||!lf||!skips.length){$("ffbox").hidden=true;return}
+ var c=skips.map(function(r){return"between(t,"+r[0]+","+r[1]+")"}).join("+");
+ $("cmd").value='ffmpeg -i "'+lf.name+'" -vf "select=\'not('+c+')\',setpts=N/FRAME_RATE/TB" -af "aselect=\'not('+c+')\',asetpts=N/SR/TB" "cut_'+lf.name+'"';
+ $("ffbox").hidden=false;
+}
+function onRanges(skipSave){readRanges();drawTl();if(!skipSave)save();cmd()}
+function begin(){
+ $("hero").hidden=true;$("stage").hidden=false;active=true;lastDur=0;pend=null;updMark();
+ $("rows").innerHTML="";var a=[];try{a=JSON.parse(localStorage.getItem(key())||"[]")}catch(e){}
+ a.forEach(function(r){addRow(r[0],r[1])});onRanges(true);
+}
+function loadYt(){
+ var id=vid($("url").value);if(!id){say("bad");return}
+ if(!ready&&!(window.YT&&YT.Player)){say("api");return}
+ say("");try{lv.pause()}catch(e){}
+ mode="yt";curId=id;lv.hidden=true;begin();
+ var pl=$("pl");pl.hidden=false;
+ if(player&&player.loadVideoById)player.loadVideoById(id);
+ else player=new YT.Player("pl",{videoId:id,playerVars:{autoplay:1,rel:0,playsinline:1},events:{onReady:function(e){e.target.playVideo()}}});
+}
+function loadLoc(f){
+ if(!f)return;lf=f;say("");$("fname").textContent=f.name;
+ try{if(player&&player.pauseVideo)player.pauseVideo()}catch(e){}
+ mode="loc";curId="f:"+f.name+f.size;begin();$("pl").hidden=true;lv.hidden=false;
+ if(lv.dataset.u)URL.revokeObjectURL(lv.dataset.u);
+ var u=URL.createObjectURL(f);lv.dataset.u=u;lv.src=u;lv.play().catch(function(){});
+}
+$("go").onclick=loadYt;$("url").onkeydown=function(e){if(e.key==="Enter")loadYt()};
+$("file").onchange=function(){loadLoc(this.files&&this.files[0])};
+$("mYt").onclick=function(){setMode("yt")};$("mLoc").onclick=function(){setMode("loc")};
+$("add").onclick=function(){addRow();var r=document.querySelectorAll("#rows .row");r[r.length-1].querySelector("input").focus();readRanges()};
+$("mark").onclick=function(){
+ var t=getT();if(isNaN(t))return;
+ if(pend===null)pend=t;else{var a=pend;pend=null;if(t-a>=.5)addRow(fmt(a),fmt(Math.ceil(t)))}
+ updMark();onRanges();
+};
+$("tl").onclick=function(e){var d=getDur();if(!(d>0))return;var rc=this.getBoundingClientRect();seek((e.clientX-rc.left)/rc.width*d)};
+$("cp").onclick=function(){
+ var t=$("cmd");t.select();
+ try{navigator.clipboard.writeText(t.value)}catch(e){try{document.execCommand("copy")}catch(e2){}}
+ $("cp").textContent=TX[lang].copied;setTimeout(function(){$("cp").textContent=TX[lang].copy},1500);
+};
+document.querySelectorAll(".pills button").forEach(function(b){b.onclick=function(){setLang(b.dataset.l)}});
+
 setInterval(function(){
- if(!player||!player.getCurrentTime||Date.now()-lastSeek<700)return;
- var t=player.getCurrentTime();
- for(var i=0;i<skips.length;i++){
-  if(t>=skips[i][0]&&t<skips[i][1]){lastSeek=Date.now();player.seekTo(skips[i][1],true);return}
- }
- var n=0;for(var j=0;j<segs.length;j++){if(t>=segs[j].start)n=j}
- if(n!==cur){cur=n;renderParts()}
-},150);
-$("go").onclick=go;$("add").onclick=function(){addRow()};
-document.querySelectorAll(".lang button").forEach(function(b){b.onclick=function(){setLang(b.dataset.l)}});
-addRow();setLang(lang);try{var q=new URLSearchParams(location.search).get("u");if(q)$("url").value=q}catch(e){}
+ if(!active)return;var t=getT(),d=getDur();if(isNaN(t))return;
+ if(Date.now()-lastSeek>600)for(var i=0;i<skips.length;i++){if(t>=skips[i][0]&&t<skips[i][1]){seek(skips[i][1]);return}}
+ if(d>0){$("ph").style.left=Math.min(t/d*100,99.5)+"%";$("tt").textContent=fmt(t)+" / "+fmt(d);if(d!==lastDur){lastDur=d;drawTl()}}
+},120);
+
+setMode("yt");setLang(lang);
 </script>
 </body>
 </html>
