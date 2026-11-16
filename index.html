@@ -27,7 +27,7 @@ button.p{background:var(--ac);color:var(--act);border-color:var(--ac);font-weigh
 .x{padding:6px 10px}
 .hint{font-size:13px;color:var(--mut);margin:6px 0 0}
 .err{color:var(--warn);font-size:14px;margin-top:8px;min-height:1em}
-.player{aspect-ratio:16/9;width:100%;border:0;border-radius:12px;background:#000;display:block}
+.player,#pl{aspect-ratio:16/9;width:100%;border:0;border-radius:12px;background:#000;display:block}
 .parts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .parts button{direction:ltr}
 .parts button.on{background:var(--ac);color:var(--act);border-color:var(--ac)}
@@ -52,12 +52,13 @@ button.p{background:var(--ac);color:var(--act);border-color:var(--ac);font-weigh
  </div>
 
  <div class="card" id="pc" hidden>
-  <iframe id="pl" class="player" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; fullscreen; encrypted-media" allowfullscreen title="player"></iframe>
+  <div id="pl"></div>
   <div class="parts" id="parts"></div>
   <p class="hint" id="note"></p>
  </div>
 </main>
 
+<script src="https://www.youtube.com/iframe_api"></script>
 <script>
 var TX={
 ar:{t:"مشغّل تخطّي المقاطع",url:"رابط فيديو يوتيوب",skip:"المقاطع التي سيتم تخطّيها (من – إلى)",add:"+ إضافة مقطع للتخطّي",hint:"اكتب الوقت بصيغة 2:30 أو 1:02:30 أو بالثواني. الفيديو لا يُحمَّل ولا يُعدَّل.",go:"▶ تشغيل",bad:"رابط يوتيوب غير صالح.",badT:"وقت غير صالح، تأكد من أن «من» أقل من «إلى».",none:"أضف مقطعًا واحدًا على الأقل للتخطّي.",part:"الجزء",note:"ينتقل المشغّل تلقائيًا إلى الجزء التالي. إذا أوقفت الفيديو مؤقتًا فاستعمل أزرار الأجزاء للانتقال يدويًا.",from:"من",to:"إلى"},
@@ -112,7 +113,7 @@ function go(){
  segs=[];var pos=0;
  rs.forEach(function(r){if(r[0]>pos)segs.push({id:id,start:pos,end:r[0]});pos=Math.max(pos,r[1])});
  segs.push({id:id,start:pos,end:null});
- $("pc").hidden=false;renderParts();playSeg(0);
+ skips=rs;$("pc").hidden=false;start(id);
  $("pc").scrollIntoView({behavior:"smooth"});
 }
 function renderParts(){
@@ -123,14 +124,30 @@ function renderParts(){
   b.onclick=function(){playSeg(i)};c.appendChild(b);
  });
 }
-function playSeg(i){
- clearTimeout(timer);
- if(i>=segs.length)return;
- cur=i;var g=segs[i];
- $("pl").src="https://www.youtube.com/embed/"+g.id+"?autoplay=1&rel=0&playsinline=1&start="+g.start+(g.end!==null?"&end="+g.end:"");
- renderParts();
- if(g.end!==null)timer=setTimeout(function(){playSeg(i+1)},(g.end-g.start+2)*1000);
+var player=null,skips=[],ready=false,lastSeek=0;
+TX.ar.api="تعذّر تحميل واجهة يوتيوب. تحقق من الاتصال وأعد تحميل الصفحة.";
+TX.fr.api="Impossible de charger l’API YouTube. Vérifiez la connexion et rechargez la page.";
+TX.en.api="Could not load the YouTube API. Check your connection and reload the page.";
+window.onYouTubeIframeAPIReady=function(){ready=true};
+function start(id){
+ if(!ready&&!(window.YT&&YT.Player)){$("err").textContent=TX[lang].api;return}
+ cur=0;renderParts();
+ if(player&&player.loadVideoById){player.loadVideoById({videoId:id,startSeconds:segs[0].start});return}
+ player=new YT.Player("pl",{videoId:id,playerVars:{autoplay:1,rel:0,playsinline:1,start:segs[0].start},events:{onReady:function(e){e.target.playVideo()}}});
 }
+function playSeg(i){
+ if(!player||!player.seekTo)return;
+ cur=i;lastSeek=Date.now();player.seekTo(segs[i].start,true);player.playVideo();renderParts();
+}
+setInterval(function(){
+ if(!player||!player.getCurrentTime||Date.now()-lastSeek<700)return;
+ var t=player.getCurrentTime();
+ for(var i=0;i<skips.length;i++){
+  if(t>=skips[i][0]&&t<skips[i][1]){lastSeek=Date.now();player.seekTo(skips[i][1],true);return}
+ }
+ var n=0;for(var j=0;j<segs.length;j++){if(t>=segs[j].start)n=j}
+ if(n!==cur){cur=n;renderParts()}
+},150);
 $("go").onclick=go;$("add").onclick=function(){addRow()};
 document.querySelectorAll(".lang button").forEach(function(b){b.onclick=function(){setLang(b.dataset.l)}});
 addRow();setLang(lang);try{var q=new URLSearchParams(location.search).get("u");if(q)$("url").value=q}catch(e){}
