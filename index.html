@@ -133,7 +133,7 @@ function playSeg(i){
 }
 $("go").onclick=go;$("add").onclick=function(){addRow()};
 document.querySelectorAll(".lang button").forEach(function(b){b.onclick=function(){setLang(b.dataset.l)}});
-addRow();setLang(lang);
+addRow();setLang(lang);try{var q=new URLSearchParams(location.search).get("u");if(q)$("url").value=q}catch(e){}
 </script>
 </body>
 </html>
