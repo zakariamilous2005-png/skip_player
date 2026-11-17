@@ -53,6 +53,7 @@ h2{font-size:18px;margin:0 0 10px}
 textarea{width:100%;padding:10px;border:1px solid var(--ln);border-radius:14px;background:var(--bg);color:var(--tx);font:13px/1.5 ui-monospace,Consolas,monospace;direction:ltr}
 .li{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--ln)}.li:first-child{border-top:0}.li div{flex:1;min-width:0}.li strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}.li .btn{padding:8px 18px}
 .big{width:100%;padding:16px;font-size:18px}.prog{height:10px;border-radius:5px;background:var(--bg);overflow:hidden;margin-top:12px}.prog i{display:block;height:100%;width:0;background:var(--ac)}a.btn{display:inline-block;text-decoration:none;margin-top:12px}summary{cursor:pointer}
+.libh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.libh h2{margin:0}.btn.sm{padding:8px 16px;font-size:14px}
 [hidden]{display:none!important}
 </style>
 </head>
@@ -71,13 +72,15 @@ textarea{width:100%;padding:10px;border:1px solid var(--ln);border-radius:14px;b
  <div class="in" id="ytIn"><input type="text" id="url" dir="ltr" data-p="ph" autocomplete="off"><button class="btn" id="go" data-t="play"></button></div>
  <div class="in" id="locIn" hidden><label class="btn alt" for="file" data-t="pick"></label><input type="file" id="file" accept="video/*" hidden><span id="fname"></span></div>
  <div class="err" id="err" role="alert"></div>
+ <p class="muted" id="msg" role="status" style="margin:0"></p>
 </section>
 
-<section class="panel" id="lib" hidden><h2 data-t="lib"></h2><div id="libList"></div></section>
+<section class="panel" id="lib" hidden><div class="libh"><h2 data-t="lib"></h2><div class="acts" style="margin:0"><button class="btn alt sm" id="exp" data-t="exp"></button><label class="btn alt sm" for="imp" data-t="imp"></label><input type="file" id="imp" class="impf" accept=".json,application/json" hidden></div></div><div id="libList"></div></section>
 
 <section id="hero">
  <div class="tl demo" aria-hidden="true"><i class="cut" style="left:20%;width:11%"></i><i class="cut" style="left:58%;width:7%"></i></div>
  <ol class="steps"><li><b>1</b><span data-t="s1"></span></li><li><b>2</b><span data-t="s2"></span></li><li><b>3</b><span data-t="s3"></span></li></ol>
+ <p style="margin-top:20px"><label class="btn alt sm" for="imp2" data-t="imp"></label><input type="file" id="imp2" class="impf" accept=".json,application/json" hidden></p>
 </section>
 
 <section id="stage" hidden>
@@ -93,7 +96,7 @@ textarea{width:100%;padding:10px;border:1px solid var(--ln);border-radius:14px;b
   <p class="muted" id="rEmpty" data-t="rE"></p>
   <div id="rows"></div>
   <p class="err" id="rerr" hidden data-t="badT"></p>
-  <div class="acts"><button class="btn alt" id="add" data-t="add"></button></div>
+  <div class="acts"><button class="btn alt" id="add" data-t="add"></button><button class="btn alt" id="share" hidden data-t="share"></button></div>
  </div>
  <div class="panel" id="ffbox" hidden>
   <h2 data-t="svT"></h2>
@@ -186,7 +189,7 @@ function cmd(){
  $("cmd").value='ffmpeg -i "'+lf.name+'" -vf "select=\'not('+c+')\',setpts=N/FRAME_RATE/TB" -af "aselect=\'not('+c+')\',asetpts=N/SR/TB" "cut_'+lf.name+'"';
  $("ffbox").hidden=false;
 }
-function onRanges(skipSave){readRanges();drawTl();if(!skipSave)save();cmd()}
+function onRanges(skipSave){readRanges();drawTl();if(!skipSave)save();cmd();$("share").hidden=!(mode==="yt"&&skips.length)}
 function begin(){
  $("hero").hidden=true;$("stage").hidden=false;active=true;lastDur=0;pend=null;updMark();
  $("rows").innerHTML="";var a=[];try{a=JSON.parse(localStorage.getItem(key())||"[]")}catch(e){}
@@ -235,12 +238,13 @@ function drawLib(){
  var l=lib(),box=$("libList"),s=TX[lang];$("lib").hidden=!l.length;box.innerHTML="";
  l.forEach(function(x){
   var d=document.createElement("div");d.className="li";
-  d.innerHTML='<div><strong></strong><span class="muted"></span></div><button class="btn" type="button"></button><button class="x" type="button" aria-label="×">×</button>';
+  d.innerHTML='<div><strong></strong><span class="muted"></span></div><button class="btn" type="button"></button><button class="btn alt" type="button"></button><button class="x" type="button" aria-label="×">×</button>';
   d.querySelector("strong").textContent=x.title||("youtube.com/watch?v="+x.id);
   d.querySelector("span").textContent=s.cnt.replace("{n}",rangesOf(x.id));
-  var b=d.querySelectorAll("button");b[0].textContent=s.play;
+  var b=d.querySelectorAll("button");b[0].textContent=s.play;b[1].textContent=s.share;
   b[0].onclick=function(){setMode("yt");$("url").value="https://www.youtube.com/watch?v="+x.id;loadYt();window.scrollTo({top:0,behavior:"smooth"})};
-  b[1].onclick=function(){
+  b[1].onclick=function(){shareIt(x.id)};
+  b[2].onclick=function(){
    if(!confirm(s.del))return;
    try{localStorage.removeItem("skip_"+x.id)}catch(e){}
    setLib(lib().filter(function(y){return y.id!==x.id}));
@@ -278,6 +282,58 @@ lv.onended=function(){if(recOn&&rec&&rec.state!=="inactive")rec.stop()};
 $("rec").onclick=startRec;
 $("cancel").onclick=function(){recOn=false;if(rec){rec.onstop=null;try{rec.stop()}catch(e){}}lv.pause();resetRec();$("rst").textContent=""};
 $("url").onpaste=function(){setTimeout(loadYt,0)};
+var tmr;
+function toast(t){$("msg").textContent=t;clearTimeout(tmr);tmr=setTimeout(function(){$("msg").textContent=""},4500)}
+function savedSec(id){try{return JSON.parse(localStorage.getItem("skip_"+id)||"[]").map(function(r){return[parseT(r[0]),parseT(r[1])]}).filter(function(r){return!isNaN(r[0])&&!isNaN(r[1])&&r[0]<r[1]})}catch(e){return[]}}
+function addShared(id,rs,title){
+ if(!/^[A-Za-z0-9_-]{11}$/.test(id||"")||!Array.isArray(rs))return false;
+ var have={},out=[];
+ function push(a,b){a=Math.floor(a);b=Math.ceil(b);if(!(a>=0&&b>a&&b<1e6))return;var k=a+"-"+b;if(!have[k]){have[k]=1;out.push([a,b])}}
+ savedSec(id).forEach(function(r){push(r[0],r[1])});
+ rs.slice(0,50).forEach(function(r){if(r&&typeof r[0]==="number"&&typeof r[1]==="number")push(r[0],r[1])});
+ if(!out.length)return false;
+ out.sort(function(x,y){return x[0]-y[0]});
+ try{localStorage.setItem("skip_"+id,JSON.stringify(out.map(function(r){return[fmt(r[0]),fmt(r[1])]})))}catch(e){return false}
+ var l=lib(),i=l.findIndex(function(x){return x.id===id}),t=String(title||"").slice(0,200);
+ if(i<0)l.unshift({id:id,title:t});else if(t&&!l[i].title)l[i].title=t;
+ setLib(l);return true;
+}
+function shareIt(id){
+ var r=savedSec(id).map(function(x){return x[0]+"-"+x[1]}).join(",");
+ var link=location.href.split(/[?#]/)[0]+"?v="+id+"&s="+r;
+ var ok=function(){toast(TX[lang].lnk)};
+ try{navigator.clipboard.writeText(link).then(ok,function(){prompt("",link)})}catch(e){prompt("",link)}
+}
+function importList(f){
+ var r=new FileReader();
+ r.onload=function(){
+  try{
+   var j=JSON.parse(r.result),n=0;
+   if(!j||j.app!=="skip-player"||!Array.isArray(j.videos))throw 0;
+   j.videos.forEach(function(v){if(v&&addShared(v.id,v.ranges,v.title))n++});
+   toast(TX[lang].imported.replace("{n}",n));
+  }catch(e){say("badFile")}
+  drawLib();
+ };
+ r.readAsText(f);
+}
+function openShared(){
+ var p;try{p=new URLSearchParams(location.search)}catch(e){return}
+ var id=p.get("v"),s=p.get("s");if(!id||!s)return;
+ var rs=s.split(",").map(function(x){var q=x.split("-");return[Number(q[0]),Number(q[1])]});
+ if(!addShared(id,rs))return;
+ try{history.replaceState(null,"",location.href.split(/[?#]/)[0])}catch(e){}
+ drawLib();$("url").value="https://www.youtube.com/watch?v="+id;
+ var n=0,t=setInterval(function(){n++;if(ready||(window.YT&&YT.Player)){clearInterval(t);loadYt()}else if(n>50){clearInterval(t);say("api")}},200);
+}
+$("share").onclick=function(){if(curId)shareIt(curId)};
+$("exp").onclick=function(){
+ var v=lib().map(function(x){return{id:x.id,title:x.title||"",ranges:savedSec(x.id)}}).filter(function(x){return x.ranges.length});
+ var a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob([JSON.stringify({app:"skip-player",v:1,videos:v},null,1)],{type:"application/json"}));
+ a.download="skip-list.json";document.body.appendChild(a);a.click();a.remove();
+};
+document.querySelectorAll(".impf").forEach(function(i){i.onchange=function(){if(this.files&&this.files[0])importList(this.files[0]);this.value=""}});
 $("go").onclick=loadYt;$("url").onkeydown=function(e){if(e.key==="Enter")loadYt()};
 $("file").onchange=function(){loadLoc(this.files&&this.files[0])};
 $("mYt").onclick=function(){setMode("yt")};$("mLoc").onclick=function(){setMode("loc")};
@@ -308,7 +364,10 @@ TX.ar.lib="فيديوهاتي";TX.ar.cnt="{n} مقاطع مُتخطّاة";TX.ar
 Object.assign(TX.en,{svT:"Save a cut copy",svN:"Records your video without the skipped parts and gives you a file to download. It plays in real time with sound, so keep this tab open until it finishes. Use it only for videos you own or may edit.",svB:"Start saving",cancel:"Cancel",recing:"Recording… keep this tab open.",done:"Done. Download your copy below.",dl:"Download the cut copy",noRec:"This browser can’t record video. Try Chrome or Edge on a computer, or use the advanced command below.",adv:"Advanced: ffmpeg command",tip:"Press it when the unwanted part starts, and again when it ends."});
 Object.assign(TX.fr,{svT:"Enregistrer une copie coupée",svN:"Enregistre votre vidéo sans les passages ignorés et vous donne un fichier à télécharger. La lecture se fait en temps réel, avec le son : gardez cet onglet ouvert jusqu’à la fin. À utiliser seulement pour des vidéos qui vous appartiennent ou que vous pouvez modifier.",svB:"Lancer l’enregistrement",cancel:"Annuler",recing:"Enregistrement en cours… gardez cet onglet ouvert.",done:"Terminé. Téléchargez votre copie ci-dessous.",dl:"Télécharger la copie coupée",noRec:"Ce navigateur ne peut pas enregistrer la vidéo. Essayez Chrome ou Edge sur ordinateur, ou utilisez la commande avancée ci-dessous.",adv:"Avancé : commande ffmpeg",tip:"Appuyez quand le passage indésirable commence, puis à nouveau quand il se termine."});
 Object.assign(TX.ar,{svT:"احفظ نسخة مقطوعة",svN:"يسجّل الفيديو بدون المقاطع المتخطّاة ويعطيك ملفًا للتحميل. يعمل بالوقت الحقيقي مع الصوت، فأبقِ هذه التبويبة مفتوحة حتى ينتهي. استعمله فقط مع فيديوهات تملكها أو يحق لك تعديلها.",svB:"ابدأ الحفظ",cancel:"إلغاء",recing:"جارٍ التسجيل… أبقِ هذه التبويبة مفتوحة.",done:"تم. حمّل نسختك من الأسفل.",dl:"تحميل النسخة المقطوعة",noRec:"هذا المتصفح لا يستطيع تسجيل الفيديو. جرّب Chrome أو Edge على الحاسوب، أو استعمل الأمر المتقدم أدناه.",adv:"متقدم: أمر ffmpeg",tip:"اضغط عندما يبدأ المقطع غير المرغوب، ثم اضغط مرة أخرى عندما ينتهي."});
-backfill();setMode("yt");setLang(lang);
+Object.assign(TX.en,{share:"Share",lnk:"Link copied. Send it to anyone.",exp:"Export list",imp:"Import a skip list",imported:"{n} videos imported.",badFile:"That file isn’t a Skip Player list."});
+Object.assign(TX.fr,{share:"Partager",lnk:"Lien copié. Envoyez-le à qui vous voulez.",exp:"Exporter la liste",imp:"Importer une liste",imported:"{n} vidéos importées.",badFile:"Ce fichier n’est pas une liste Skip Player."});
+Object.assign(TX.ar,{share:"مشاركة",lnk:"تم نسخ الرابط. أرسله لمن تشاء.",exp:"تصدير القائمة",imp:"استيراد قائمة",imported:"تم استيراد {n} فيديو.",badFile:"هذا الملف ليس قائمة من Skip Player."});
+backfill();setMode("yt");setLang(lang);openShared();
 </script>
 </body>
 </html>
