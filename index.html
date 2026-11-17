@@ -190,7 +190,7 @@ function onRanges(skipSave){readRanges();drawTl();if(!skipSave)save();cmd()}
 function begin(){
  $("hero").hidden=true;$("stage").hidden=false;active=true;lastDur=0;pend=null;updMark();
  $("rows").innerHTML="";var a=[];try{a=JSON.parse(localStorage.getItem(key())||"[]")}catch(e){}
- a.forEach(function(r){addRow(r[0],r[1])});onRanges(true);
+ a.forEach(function(r){addRow(r[0],r[1])});onRanges(true);if(mode==="yt"&&a.length)touchLib(a.length);
 }
 function loadYt(){
  var id=vid($("url").value);if(!id){say("bad");return}
@@ -213,6 +213,17 @@ function lib(){try{return JSON.parse(localStorage.getItem("skip_lib")||"[]")}cat
 function setLib(a){try{localStorage.setItem("skip_lib",JSON.stringify(a))}catch(e){}}
 function rangesOf(id){try{return JSON.parse(localStorage.getItem("skip_"+id)||"[]").length}catch(e){return 0}}
 function ytTitle(){try{return player.getVideoData().title||""}catch(e){return""}}
+function backfill(){
+ try{
+  var l=lib(),ch=false;
+  for(var i=0;i<localStorage.length;i++){
+   var k=localStorage.key(i);if(k.indexOf("skip_")!==0)continue;
+   var id=k.slice(5);
+   if(/^[A-Za-z0-9_-]{11}$/.test(id)&&rangesOf(id)&&!l.some(function(x){return x.id===id})){l.push({id:id,title:""});ch=true}
+  }
+  if(ch)setLib(l);
+ }catch(e){}
+}
 function touchLib(n){
  if(mode!=="yt"||!curId)return;
  var l=lib(),i=l.findIndex(function(x){return x.id===curId});
@@ -297,7 +308,7 @@ TX.ar.lib="فيديوهاتي";TX.ar.cnt="{n} مقاطع مُتخطّاة";TX.ar
 Object.assign(TX.en,{svT:"Save a cut copy",svN:"Records your video without the skipped parts and gives you a file to download. It plays in real time with sound, so keep this tab open until it finishes. Use it only for videos you own or may edit.",svB:"Start saving",cancel:"Cancel",recing:"Recording… keep this tab open.",done:"Done. Download your copy below.",dl:"Download the cut copy",noRec:"This browser can’t record video. Try Chrome or Edge on a computer, or use the advanced command below.",adv:"Advanced: ffmpeg command",tip:"Press it when the unwanted part starts, and again when it ends."});
 Object.assign(TX.fr,{svT:"Enregistrer une copie coupée",svN:"Enregistre votre vidéo sans les passages ignorés et vous donne un fichier à télécharger. La lecture se fait en temps réel, avec le son : gardez cet onglet ouvert jusqu’à la fin. À utiliser seulement pour des vidéos qui vous appartiennent ou que vous pouvez modifier.",svB:"Lancer l’enregistrement",cancel:"Annuler",recing:"Enregistrement en cours… gardez cet onglet ouvert.",done:"Terminé. Téléchargez votre copie ci-dessous.",dl:"Télécharger la copie coupée",noRec:"Ce navigateur ne peut pas enregistrer la vidéo. Essayez Chrome ou Edge sur ordinateur, ou utilisez la commande avancée ci-dessous.",adv:"Avancé : commande ffmpeg",tip:"Appuyez quand le passage indésirable commence, puis à nouveau quand il se termine."});
 Object.assign(TX.ar,{svT:"احفظ نسخة مقطوعة",svN:"يسجّل الفيديو بدون المقاطع المتخطّاة ويعطيك ملفًا للتحميل. يعمل بالوقت الحقيقي مع الصوت، فأبقِ هذه التبويبة مفتوحة حتى ينتهي. استعمله فقط مع فيديوهات تملكها أو يحق لك تعديلها.",svB:"ابدأ الحفظ",cancel:"إلغاء",recing:"جارٍ التسجيل… أبقِ هذه التبويبة مفتوحة.",done:"تم. حمّل نسختك من الأسفل.",dl:"تحميل النسخة المقطوعة",noRec:"هذا المتصفح لا يستطيع تسجيل الفيديو. جرّب Chrome أو Edge على الحاسوب، أو استعمل الأمر المتقدم أدناه.",adv:"متقدم: أمر ffmpeg",tip:"اضغط عندما يبدأ المقطع غير المرغوب، ثم اضغط مرة أخرى عندما ينتهي."});
-setMode("yt");setLang(lang);
+backfill();setMode("yt");setLang(lang);
 </script>
 </body>
 </html>
